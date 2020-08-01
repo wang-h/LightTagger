@@ -1,6 +1,6 @@
 <div align="center">
 
-![logo](http://github.com/wang-h/LightTagger/frontend/static/img/logo.png)
+![logo](http://github.com/wang-h/LightTagger/blob/master/frontend/static/img/logo.png)
  
 
 </div>
@@ -10,7 +10,7 @@
 LightTagger 是一个超轻量级的开源文本标注工具，可以广泛用于文本数据中的命名实体、实体关系、事件等人工辅助标注的任务。
 
 ## 页面快照
-![image](http://github.com/wang-h/LightTagger/example.png)
+![image](http://github.com/wang-h/LightTagger/blob/master/example.png)
 
 
 ## 功能与目的
