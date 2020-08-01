@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% block content %}
+<div id="tagger" class="container" >
+    <div class="row"><h1 class="display-4">开始标注</h1></div>
+    <hr class="hidden-sm hidden-md hidden-lg">
+    <div class="row">
+        <div class="col-8">
+            <div class="btn-group">
+                <!-- 定义一个全局子组件 -->
+                <tag-choice v-for="(value, key) in tagIdMap" v-bind:tag="key" v-bind:tid="value"></tag-choice>  
+            </div>
+        </div>
+        <div class="col-4"> 
+            <div class="d-flex flex-row-reverse">
+                <button type="button" class="btn btn-info" v-on:click="saveFile()">保存</button> 
+            </div>
+        </div>
+        
+    </div>
+    <div class="row" v-bind:key="currentPage"  v-for="(sid, i) in samples[currentPage]" > 
+        <div class="w-100 bd-callout bd-callout-info" v-bind:class="{'bg-light shadow':editable==i}">
+            <div class="row">
+                <div class="col-8">
+                    <p>{{sid}}
+                    <span v-bind:class="textStyleGroup[tag_ids_arr[i][j]]" v-for="(token, j) in sentences[i]" v-on:click="labeling(j, i)">{{token}}</span></p>  
+                    <span class="badge badge-info"  v-if="saved[i]">已保存！</span>
+                </div>
+                <div class="col-4">  
+                    <div class="d-flex flex-row-reverse">
+                        <div class="col-4"><button type="button" class="btn btn-info" v-on:click="saveCurrentTriggerags(sid, i)">保存</button> </div>
+                        <div class="col-4"><button type="button" class="btn btn-secondary" v-on:click="enableLabeling(i)">编辑</button></div>
+                    </div> 
+                </div> 
+            </div>
+        </div> 
+    </div>
+    <div class="row">
+        <div class="col-10">
+            <div class="page-wrap">
+                <div class="btn-group flex-row">
+                    <button type="button" class="btn btn-info" v-if="currentPage!=0" v-bind:class="{disabled: currentPage== 0}"  v-on:click="currentPage--">Previous</button>
+                    <button type="button" class="btn btn-light" v-bind:class="{disabled: currentPage== 0}" v-on:click="">{{currentPage}}/{{totalPageNum}}</button>
+                    <button type="button" class="btn btn-info" v-if="currentPage!=totalPageNum"  v-bind:class="{disabled: currentPage== totalPageNum}"  v-on:click="currentPage++">next</button>
+                 
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    
+<script type="text/javascript">
+
+textStyleGroup= ["text-secondary",  "text-danger", "text-primary", "text-success", "text-warning", "text-info", "text-light", "text-dark"];
+btnStyleGroup= ["btn btn-outline-secondary",  "btn btn-outline-danger", "btn btn-outline-primary", "btn btn-outline-success", "btn btn-outline-warning", "btn btn-outline-info", "btn btn-outline-dark"];
+
+
+var tagger = new Vue({
+    el: '#tagger',
+    components: {
+        // <tag-choice> 将只在父模板可用,处理标签选择器
+        'tag-choice': {
+            props: {
+                'tag': "",
+                'tid': 0
+                },
+            template: '<button type="button"  v-bind:class="btnStyleGroup[tid]"  v-on:click="setSelectedTriggeragId(tid)">{{tag}}</button>', 
+            methods:{
+                setSelectedTriggeragId: function(tid){ 
+                    tagger.$set(tagger.start_end, 0, -1);
+                    tagger.$set(tagger.start_end, 1, -1);
+                    tagger.selectedTriggeragId = tid;
+                },
+            }
+        }   
+    },
+    data:{
+        tagIdMap: [[jdata.tag_id_mapping|tojson]], // 直接从jiaja2渲染模版时候顺带返回的data中取值了，为了程序轻量化，只好用jinjia2
+        selectedTriggeragId: 0, 
+        sentences:  [null, null, null, null, null], 
+        tag_ids_arr:  [null, null, null, null, null], 
+        saved:  [false, false, false, false, false ], 
+        reFresh: true,
+        samples: [[jdata.samples|tojson]],
+        currentPage: 0, 
+        editable: -1,
+        start_end: [-1, -1],
+        totalPageNum : [[jdata.total_package_num]],
+    },
+    mounted(){
+        //首次初始化
+        let sent_candidates =  this.samples[this.currentPage]
+        for (var i =0;i< sent_candidates.length;i ++ ){
+            this.getSentence(i, sent_candidates[i])
+            
+        }
+    },
+    watch: {
+        // 之后页面刷新使用
+        currentPage:function() {
+            let new_sent_candidates = this.samples[this.currentPage];
+            this.getSentence;
+            for (var i =0;i< new_sent_candidates.length;i ++ ){
+                this.getSentence(i, new_sent_candidates[i])
+            }
+        } 
+    },
+    methods: {
+        getSentence: function(i, sid){ 
+            var that = this; //这一步很重要, 由于axios套了一层，this就没有效果了, that=tagger 
+            //调用axios请求API
+            axios.get('/sentence/'+sid).then(response => {
+                    //第一个.data是进入数据
+                    //第二个.data是json格式里的"data"对象  
+                    that.$set(that.sentences, i, response.data.data.tokens)
+                    that.$set(that.tag_ids_arr, i, response.data.data.tag_ids)
+                    that.$set(that.saved, i, false)
+                    console.log(that.sentences[i]);
+            })
+            .catch(function (error) {
+                    console.log(error);
+            });
+        }, 
+        enableLabeling: function(idx){
+            tagger.$set(tagger.start_end, 0, -1);
+            tagger.$set(tagger.start_end, 1, -1);
+            this.editable = idx;
+        },
+        labeling: function(wid, idx){
+            if (idx!= this.editable){
+                return;
+            }
+            select_start_end = this.start_end
+            cur_tid = this.selectedTriggeragId;
+            //获得当前要标注的tag类型
+            if(select_start_end[0] == -1 ){
+                //如果没有标注或者标注不同 
+                select_start_end[0] = wid;
+                this.$set(this.tag_ids_arr[idx],  wid, cur_tid);
+                return;
+            }
+            if(select_start_end[0] != -1){
+                //如果没有标注还
+                select_start_end[1] = wid;
+                start = Math.min(select_start_end[0], select_start_end[1]);
+                end = Math.max(select_start_end[0], select_start_end[1]);
+                for (var i=start;i<=end;i++){
+                    this.$set(this.tag_ids_arr[idx],  i, cur_tid);
+                }
+                //记录器复原
+                tagger.$set(tagger.start_end, 0, -1);
+                tagger.$set(tagger.start_end, 1, -1);
+            }
+        },
+        saveCurrentTriggerags: function(sid, i){
+            console.log(sid, i, tagger.tag_ids_arr[i]);
+
+            axios.put('/update/sentence/', {
+                "sid": sid,
+                "tag_ids": tagger.tag_ids_arr[i]
+            })
+            .then(response => { 
+                if (response.data.status == 'success'){
+                    tagger.$set(tagger.saved, i, true);
+                    console.log(response.data.status);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        },
+        saveFile: function(){ 
+                axios.post('/save/')
+                .then(response => { 
+                    
+                    if (response.data.status == 'success'){
+                        console.log(response.data.status);
+                        alert('保存成功! '+ response.data.path);
+                    }
+                    else{
+                        alert('保存失败! ');     
+                    }
+                   
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        }
+    //     closeWindow: function(){ 
+   
+    // // 　　　　　window.opener = null; 
+    // // 　　　　　window.open(' ', '_self', ' '); 
+    // // 　　　　　window.close(); 
+
+    // 　　} 
+
+    },
+   
+})
+</script>
+{% endblock content %}
