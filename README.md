@@ -10,7 +10,8 @@ LightTagger 的前端页面主要基于 Bootstrap.css 和 Vue.js，使用fastAPI
 
 你需要安装以下软件
 
-```pip3 install fastapi pydantic
+```
+pip3 install fastapi pydantic
 pip3 install pydantic
 pip3 install uvicorn
 ```
@@ -24,7 +25,8 @@ pip3 install uvicorn
 
 ## 使用
 
-```python3 backend/main.py
+```
+python3 backend/main.py
 ```
 
 ## 页面快照
