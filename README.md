@@ -1,8 +1,5 @@
 <div align="center">
-
-<a href="url"><img src="https://github.com/wang-h/LightTagger/blob/master/frontend/static/img/logo.png?raw=true" align="left" height="48" width="48" ></a>
- 
-
+<img src="https://github.com/wang-h/LightTagger/blob/master/frontend/static/img/logo.png?raw=true" align="left" height="128" width="128" >
 </div>
 
 # LightTagger
