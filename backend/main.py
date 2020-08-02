@@ -54,7 +54,7 @@ async def labeling(request: Request):
         "samples": list(divide_n_package(list(range(len(app.examples))), sample_num)),
         "update_api_url": "update",
     }
-    return templates.TemplateResponse("index.html", {"request": request, "jdata": data})
+    return templates.TemplateResponse("task.html", {"request": request, "jdata": data})
 
 
 # 纯API，将json格式的sentence传回主页面
