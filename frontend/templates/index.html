@@ -75,7 +75,7 @@ var tagger = new Vue({
         }   
     },
     data:{
-        tagIdMap: [[jdata.tag_id_mapping|tojson]], // 直接从jiaja2渲染模版时候顺带返回的data中取值了，为了程序轻量化，只好用jinjia2
+        tagIdMap: [[jdata.tag_id_mapping|tojson]], // 直接从jiaja2渲染模版时候顺带返回的data中取值了，为了程序轻量化，只好用jinja2
         selectedTriggeragId: 0, 
         sentences:  [null, null, null, null, null], 
         tag_ids_arr:  [null, null, null, null, null], 
