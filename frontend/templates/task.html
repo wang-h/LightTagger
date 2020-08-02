@@ -17,8 +17,7 @@
         </div>
         
     </div>
-    <div class="row" v-bind:key="currentPage"  v-for="(sid, i) in samples[currentPage]" > 
-        <div class="w-100 bd-callout bd-callout-info" v-bind:class="{'bg-light shadow':editable==i}">
+    <div class="w-100 bd-callout bd-callout-info" v-bind:class="{'bg-light shadow':editable==i}" v-bind:key="currentPage"  v-for="(sid, i) in samples[currentPage]" >
             <div class="row">
                 <div class="col-8">
                     <p>{{sid}}
@@ -33,13 +32,12 @@
                 </div> 
             </div>
         </div> 
-    </div>
     <div class="row">
         <div class="col-10">
             <div class="page-wrap">
                 <div class="btn-group flex-row">
                     <button type="button" class="btn btn-info" v-if="currentPage!=0" v-bind:class="{disabled: currentPage== 0}"  v-on:click="currentPage--">Previous</button>
-                    <button type="button" class="btn btn-light" v-bind:class="{disabled: currentPage== 0}" v-on:click="">{{currentPage}}/{{totalPageNum}}</button>
+                    <button type="button" class="btn btn-light" v-bind:class="{disabled: currentPage== 0}">{{currentPage}} / {{totalPageNum}}</button>
                     <button type="button" class="btn btn-info" v-if="currentPage!=totalPageNum"  v-bind:class="{disabled: currentPage== totalPageNum}"  v-on:click="currentPage++">next</button>
                  
                 </div>

@@ -45,7 +45,7 @@ async def index(request: Request):
     return templates.TemplateResponse("hello.html", {"request": request, "data": data})
 
 # 为了实现轻量级开箱即用， 对于标注页面调用jinja2的进行渲染处理，将template传回主页面
-@app.get('/index/')
+@app.get('/task/')
 async def labeling(request: Request):
     # 每次返回100个句子
     data = {
