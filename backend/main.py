@@ -26,7 +26,8 @@ templates = Jinja2Templates(directory="frontend/templates")
 app.config = get_json("config.json")
 tag_id_mapping = {x[0]: i for i, x in enumerate(app.config['tags'])}
 # 挂载文本数据
-app.examples = DataLoader().read_CoNLL_format_files("data", tag_id_mapping)
+app.examples = DataLoader().read_CoNLL_format_files(
+    app.config['data_path'], tag_id_mapping)
 sample_num = 5
 
 
@@ -64,7 +65,6 @@ async def getSentence(request: Request, sid: int):
         "sid": sid,
         'tokens': tokens,
         "tag_ids": tag_ids,
-        "token_ids": list(zip(tokens, tag_ids)),
         "length": len(tokens)
     }
     return {"data": data}
@@ -86,7 +86,7 @@ async def submit_labeling(request: Request, item: TagIDs):
 @app.post('/save')
 async def save(request: Request):
     path, success = DataLoader.save_CoNLL_format_files(
-        "data", app.examples, tag_id_mapping)
+        app.config['data_path'], app.examples, tag_id_mapping)
     status = 'success' if success else 'fault'
     return {
         'status': status,

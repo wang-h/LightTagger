@@ -111,7 +111,7 @@ var tagger = new Vue({
             //调用axios请求API
             axios.get('/sentence/'+sid).then(response => {
                     //第一个.data是进入数据
-                    //第二个.data是json格式里的"data"对象  
+                    //第二个.data是json格式里的"data"对象   
                     that.$set(that.sentences, i, response.data.data.tokens)
                     that.$set(that.tag_ids_arr, i, response.data.data.tag_ids)
                     that.$set(that.saved, i, false)
